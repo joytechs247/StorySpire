@@ -48,30 +48,44 @@
     </nav>
 
     <!-- Page Header -->
-    <header class="masthead" style="background-image: url('{{ url_for('static', filename='cloud.jpg') }}')">
+    <header class="masthead" style="background-image: url('{{ url_for('static', filename='delete.jpg') }}')">
       <div class="container">
         <div class="row">
           <div class="col-lg-8 col-md-10 mx-auto">
-            <div class="post-heading">
-              <h1>{{ post.title }}</h1>
-              <h2 class="subheading">{{ post.subtitle }}</h2>
-              <span class="meta">Posted by {{ post.author }} on {{ post.date_posted.strftime('%B %d, %Y') }}</span>
+            <div class="site-heading">
+              <h1>Delete Post</h1>
+              <span class="subheading">You can delete existing blogs here.</span>
             </div>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- Post Content -->
-    <article>
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-8 col-md-10 mx-auto">
-            {{ post.content|safe }}
+    <!-- Main Content -->
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+        {% for post in posts %}
+          <div class="post-preview">
+            <a href="{{ url_for('post', post_id=post.id) }}">
+              <h2 class="post-title">
+                {{ post.title }}
+              </h2>
+              <h3 class="post-subtitle">
+                {{ post.subtitle }}
+              </h3>
+            </a>
+            <p class="post-meta">Posted by {{ post.author }} on {{ post.date_posted.strftime('%B %d, %Y') }}</p>
           </div>
+          <form name="deleteForm" id="deleteForm" method="POST" action="{{ url_for('deletepost') }}">
+            <input type="hidden" name="post_id" value="{{post.id}}">
+            <input type="submit" value="Delete" class="btn btn-secondary">
+          </form>
+          {% endfor %}
+          <hr>
         </div>
       </div>
-    </article>
+    </div>
 
     <hr>
 
@@ -85,6 +99,14 @@
         </div>
       </div>
     </footer>
+
+    <!--
+    <script>
+    function deletenow() {
+      
+    }
+    </script>
+    -->
 
     <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
