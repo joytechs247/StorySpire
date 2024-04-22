@@ -1,68 +1,52 @@
 from flask import Flask, render_template, request, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy 
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 app = Flask(__name__)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///D:\JoyTechs\Github\Story Spire\StorySpire/blog.db'
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 db = SQLAlchemy(app)
 
-class Blogpost(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(50))
-    subtitle = db.Column(db.String(50))
-    author = db.Column(db.String(20))
-    date_posted = db.Column(db.DateTime)
-    content = db.Column(db.Text)
+# Define models
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String(100), nullable=False)
+    short_description = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    posted_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    image_url = db.Column(db.String(200), nullable=True)
+    posted_by = db.Column(db.String(50), nullable=False)
 
+# Define routes
 @app.route('/')
 def index():
-    posts = Blogpost.query.order_by(Blogpost.date_posted.desc()).all()
-    return render_template('index.html', posts=posts)
+    banner_image_url = 'static/banner.png'
+    posts = Post.query.all()
+    return render_template('index.html', posts=posts, banner_image_url=banner_image_url)
+
+
+@app.route('/post/<int:post_id>')
+def post_detail(post_id):
+    post = Post.query.get_or_404(post_id)
+    return render_template('post_detail.html', post=post)
+
+@app.route('/new_post', methods=['GET', 'POST'])
+def new_post():
+    if request.method == 'POST':
+        title = request.form['title']
+        short_description = request.form['short_description']
+        content = request.form['content']
+        image_url = request.form['image_url']
+        posted_by = request.form['posted_by']
+        new_post = Post(title=title, short_description=short_description, content=content, image_url=image_url, posted_by=posted_by)
+        db.session.add(new_post)
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_template('new_post.html')
+
 
 @app.route('/about')
 def about():
     return render_template('about.html')
-
-@app.route('/post/<int:post_id>')
-def post(post_id):
-    post = Blogpost.query.filter_by(id=post_id).one()
-    return render_template('post.html', post=post)
-
-@app.route('/add')
-def add():
-    return render_template('add.html')
-
-@app.route('/delete')
-def delete():
-    posts = Blogpost.query.order_by(Blogpost.date_posted.desc()).all()
-    return render_template('delete.html', posts=posts)
-
-@app.route('/addpost', methods=['POST'])
-def addpost():
-    title = request.form['title']
-    subtitle = request.form['subtitle']
-    author = request.form['author']
-    content = request.form['content']
-
-    post = Blogpost(title=title, subtitle=subtitle, author=author, content=content, date_posted=datetime.now())
-
-    db.session.add(post)
-    db.session.commit()
-
-    return redirect(url_for('index'))
-
-@app.route('/deletepost', methods=['DELETE','POST'])
-def deletepost():
-    post_id = request.form.get("post_id")
-
-    post = Blogpost.query.filter_by(id=post_id).first()
-
-    db.session.delete(post)
-    db.session.commit()
-    
-    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }} - Flask Blog{% endblock %}
+
+{% block content %}
+<div class="banner" style="height: 400px; background-image: url('{{ post.image_url }}'); background-size: cover; background-position: center;">
+    <h1 class="text-3xl font-bold text-white p-4">{{ post.title }}</h1>
+</div>
+<div class="container mx-auto mt-8">
+    <p>{{ post.content }}</p>
+</div>
+{% endblock %}
